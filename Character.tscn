@@ -10,16 +10,16 @@ size = Vector3( 1, 2, 1 )
 extents = Vector3( 0.5, 1, 0.5 )
 
 [node name="Character" type="Spatial"]
-script = ExtResource( 2 )
-body_path = NodePath("Body")
-orientation_path = NodePath("Body/Orientation")
-gravity_tween_path = NodePath("GravityTween")
-head_path = NodePath("Body/Orientation/Head")
 
 [node name="GravityTween" type="Tween" parent="."]
 playback_process_mode = 0
 
 [node name="Body" type="KinematicBody" parent="."]
+script = ExtResource( 2 )
+orientation_path = NodePath("Orientation")
+gravity_tween_path = NodePath("../GravityTween")
+head_path = NodePath("Orientation/Head")
+movement_acceleration = 150.0
 
 [node name="Orientation" type="Spatial" parent="Body"]
 script = ExtResource( 1 )

@@ -8,12 +8,6 @@ var targets: Array
 var previous_transform: Transform
 
 
-func _ready() -> void:
-    previous_transform = transform
-    for path in target_paths:
-        targets.append(get_node(path))
-
-
 func update_target_transforms() -> void:
     var current_quat: Quat = transform.basis.get_rotation_quat()
     var previous_quat: Quat = previous_transform.basis.get_rotation_quat()
@@ -26,5 +20,12 @@ func update_target_transforms() -> void:
     previous_transform = transform
 
 
-func _physics_process(delta: float) -> void:
+func _ready() -> void:
+    previous_transform = transform
+    for path in target_paths:
+        targets.append(get_node(path))
+
+
+func _physics_process(_delta: float) -> void:
+    scale = Vector3.ONE
     update_target_transforms()
