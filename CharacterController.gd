@@ -6,13 +6,16 @@ export(NodePath) var gravity_list_path
 export(NodePath) var gravity_tween_path
 export(NodePath) var head_path
 export(float) var mouse_sensitivity = 1.0
-export(float) var movement_acceleration := 20.0
-export(float) var jump_strength := 15.0
+export(float) var movement_speed := 50.0
+export(float) var movement_acceleration := 1000.0
+export(float) var movement_traction := 1000.0
+export(float) var jump_strength := 50.0
 
 onready var gravity_list: GravityList = get_node(gravity_list_path)
 onready var gravity_tween: Tween = get_node(gravity_tween_path)
 onready var head: Spatial = get_node(head_path)
 
+var is_on_ground := false
 var closest_gravity_source: GravitySource
 var bound_gravity_source: GravitySource
 var forward_movement := 0.0
@@ -20,6 +23,12 @@ var strafe_movement := 0.0
 var gravity_rotation_weight := 1.0
 var max_move_recursions := 4
 var move_recursions := 0
+
+
+func velocity_movement_addition(target: Vector3, weight: float) -> Vector3:
+    var movement_plane: Plane = Plane(orientation.transform.basis.y.normalized(), 0.0)
+    var velocity_in_movement_plane: Vector3 = movement_plane.project(velocity)
+    return velocity_in_movement_plane.move_toward(target, weight) - velocity_in_movement_plane
 
 
 func initiate_orientation_to_new_gravity_source() -> void:
@@ -80,6 +89,22 @@ func handle_mouse_looking(mouse_change: Vector2) -> void:
         head.rotation_degrees = rotation
 
 
+func handle_horizontal_movement(delta: float) -> void:
+    if forward_movement != 0.0 or strafe_movement != 0.0:
+        var forward: Vector3 = -orientation.transform.basis.z.normalized()
+        var sideways: Vector3 = orientation.transform.basis.x.normalized()
+        var movement_direction: Vector3 = (forward * forward_movement + sideways * strafe_movement).normalized()
+        velocity += velocity_movement_addition(movement_direction * movement_speed, movement_acceleration * delta)
+    else:
+        velocity += velocity_movement_addition(Vector3.ZERO, movement_traction * delta)
+
+
+func check_if_on_ground(tolerance_distance: float) -> void:
+    var down_normal: Vector3 = vector_to_gravity_source(bound_gravity_source).normalized()
+    var collision: KinematicCollision = move_and_collide(down_normal * tolerance_distance, true, true, true)
+    is_on_ground = collision != null
+
+
 func move(distance: Vector3) -> void:
     var collision: KinematicCollision = move_and_collide(distance, true, true, false)
 
@@ -114,24 +139,22 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-    update_gravity_source()
+    if gravity_list:
+        update_gravity_source()
 
     if bound_gravity_source:
         var gravity_normal: Vector3 = vector_to_gravity_source(bound_gravity_source).normalized()
         handle_gravity_rotation(gravity_normal)
 
-    var orientation_basis: Basis = orientation.transform.basis
-    var forward: Vector3 = -orientation_basis.z.normalized()
-    var sideways: Vector3 = orientation_basis.x.normalized()
-    var movement_direction: Vector3 = forward * forward_movement + sideways * strafe_movement
+    check_if_on_ground(0.2)
 
-    velocity += movement_direction * movement_acceleration * delta
+    if is_on_ground:
+        if Input.is_action_just_pressed("jump"):
+            velocity += -vector_to_gravity_source(bound_gravity_source).normalized() * jump_strength
 
-    #if body.is_on_floor():
-    #    if Input.is_action_just_pressed("jump"):
-    #        velocity += up_normal * jump_strength
+    handle_horizontal_movement(delta)
 
     move(velocity * delta)
 
     if bound_gravity_source:
-        translate(bound_gravity_source.velocity * delta)
+        translate(bound_gravity_source.movement)

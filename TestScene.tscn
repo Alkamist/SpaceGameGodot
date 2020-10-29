@@ -6,68 +6,67 @@
 [ext_resource path="res://GravitySource.gd" type="Script" id=5]
 [ext_resource path="res://Orientation.gd" type="Script" id=6]
 
-[sub_resource type="PanoramaSky" id=3]
+[sub_resource type="PanoramaSky" id=1]
 panorama = ExtResource( 2 )
 
-[sub_resource type="Environment" id=4]
+[sub_resource type="Environment" id=2]
 background_mode = 2
-background_sky = SubResource( 3 )
+background_sky = SubResource( 1 )
 
-[sub_resource type="SphereShape" id=5]
-radius = 200.0
-
-[sub_resource type="SphereMesh" id=6]
-radial_segments = 256
+[sub_resource type="SphereMesh" id=4]
+radial_segments = 128
 rings = 64
+
+[sub_resource type="SphereShape" id=3]
+radius = 200.0
 
 [node name="TestScene" type="Spatial"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 4 )
+environment = SubResource( 2 )
 
 [node name="GravityList" type="Spatial" parent="."]
 script = ExtResource( 4 )
 
 [node name="Planet1" type="Spatial" parent="GravityList"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -416.564, 213.407 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -300, 50 )
 
 [node name="Body" type="KinematicBody" parent="GravityList/Planet1"]
 script = ExtResource( 5 )
-orientation_path = NodePath("../../Planet1/Body/Orientation")
-gravity_strength = 100.0
-
-[node name="CollisionShape" type="CollisionShape" parent="GravityList/Planet1/Body"]
-shape = SubResource( 5 )
+initial_velocity = Vector3( 0, 0, 150 )
+gravity_strength = 80.0
 
 [node name="Orientation" type="Spatial" parent="GravityList/Planet1/Body"]
 script = ExtResource( 6 )
-target_paths = [ NodePath("../CollisionShape") ]
+target_paths = [ NodePath("..") ]
 
 [node name="MeshInstance" type="MeshInstance" parent="GravityList/Planet1/Body/Orientation"]
 transform = Transform( 200, 0, 0, 0, 200, 0, 0, 0, 200, 0, 0, 0 )
-mesh = SubResource( 6 )
+mesh = SubResource( 4 )
 material/0 = null
 
+[node name="CollisionShape" type="CollisionShape" parent="GravityList/Planet1/Body"]
+shape = SubResource( 3 )
+
 [node name="Planet2" type="Spatial" parent="GravityList"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -416.564, -439.296 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 300, -50 )
 
 [node name="Body" type="KinematicBody" parent="GravityList/Planet2"]
 script = ExtResource( 5 )
-orientation_path = NodePath("../../Planet1/Body/Orientation")
-initial_velocity = Vector3( 0, 0, 50 )
-gravity_strength = 100.0
-
-[node name="CollisionShape" type="CollisionShape" parent="GravityList/Planet2/Body"]
-shape = SubResource( 5 )
+initial_velocity = Vector3( 0, 0, -150 )
+gravity_strength = 80.0
 
 [node name="Orientation" type="Spatial" parent="GravityList/Planet2/Body"]
 script = ExtResource( 6 )
-target_paths = [ NodePath("../CollisionShape") ]
+target_paths = [ NodePath("..") ]
 
 [node name="MeshInstance" type="MeshInstance" parent="GravityList/Planet2/Body/Orientation"]
 transform = Transform( 200, 0, 0, 0, 200, 0, 0, 0, 200, 0, 0, 0 )
-mesh = SubResource( 6 )
+mesh = SubResource( 4 )
 material/0 = null
+
+[node name="CollisionShape" type="CollisionShape" parent="GravityList/Planet2/Body"]
+shape = SubResource( 3 )
 
 [node name="Character" parent="GravityList" instance=ExtResource( 1 )]
 

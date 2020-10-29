@@ -19,7 +19,6 @@ script = ExtResource( 2 )
 orientation_path = NodePath("Orientation")
 gravity_tween_path = NodePath("../GravityTween")
 head_path = NodePath("Orientation/Head")
-movement_acceleration = 150.0
 
 [node name="Orientation" type="Spatial" parent="Body"]
 script = ExtResource( 1 )
