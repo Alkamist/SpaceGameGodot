@@ -33,6 +33,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -300, 50 )
 
 [node name="Body" type="KinematicBody" parent="GravityList/Planet1"]
 script = ExtResource( 5 )
+orientation_path = NodePath("Orientation")
 initial_velocity = Vector3( 0, 0, 150 )
 gravity_strength = 80.0
 
@@ -53,6 +54,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 300, -50 )
 
 [node name="Body" type="KinematicBody" parent="GravityList/Planet2"]
 script = ExtResource( 5 )
+orientation_path = NodePath("Orientation")
 initial_velocity = Vector3( 0, 0, -150 )
 gravity_strength = 80.0
 
