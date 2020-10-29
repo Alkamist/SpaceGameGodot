@@ -9,37 +9,25 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "SpaceObject",
+"base": "Spatial",
 "class": "CharacterController",
 "language": "GDScript",
 "path": "res://CharacterController.gd"
 }, {
-"base": "Node",
-"class": "GravityList",
-"language": "GDScript",
-"path": "res://GravityList.gd"
-}, {
-"base": "SpaceObject",
+"base": "Spatial",
 "class": "GravitySource",
 "language": "GDScript",
 "path": "res://GravitySource.gd"
 }, {
-"base": "Spatial",
-"class": "Orientation",
+"base": "Node",
+"class": "GravitySystem",
 "language": "GDScript",
-"path": "res://Orientation.gd"
-}, {
-"base": "KinematicBody",
-"class": "SpaceObject",
-"language": "GDScript",
-"path": "res://SpaceObject.gd"
+"path": "res://GravitySystem.gd"
 } ]
 _global_script_class_icons={
 "CharacterController": "",
-"GravityList": "",
 "GravitySource": "",
-"Orientation": "",
-"SpaceObject": ""
+"GravitySystem": ""
 }
 
 [application]

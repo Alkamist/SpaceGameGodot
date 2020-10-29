@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://Orientation.gd" type="Script" id=1]
+[ext_resource path="res://FPSSmoothing.gd" type="Script" id=1]
 [ext_resource path="res://CharacterController.gd" type="Script" id=2]
 
 [sub_resource type="CubeMesh" id=1]
@@ -10,31 +10,25 @@ size = Vector3( 1, 2, 1 )
 extents = Vector3( 0.5, 1, 0.5 )
 
 [node name="Character" type="Spatial"]
-
-[node name="GravityTween" type="Tween" parent="."]
-playback_process_mode = 0
-
-[node name="Body" type="KinematicBody" parent="."]
 script = ExtResource( 2 )
-orientation_path = NodePath("Orientation")
-gravity_tween_path = NodePath("../GravityTween")
-head_path = NodePath("Orientation/Head")
 
-[node name="Orientation" type="Spatial" parent="Body"]
+[node name="Smoothing" type="Spatial" parent="."]
 script = ExtResource( 1 )
-target_paths = [ NodePath("../CollisionShape") ]
+target_path = NodePath("../Body")
 
-[node name="MeshInstance" type="MeshInstance" parent="Body/Orientation"]
+[node name="MeshInstance" type="MeshInstance" parent="Smoothing"]
 mesh = SubResource( 1 )
 material/0 = null
 
-[node name="Head" type="Spatial" parent="Body/Orientation"]
+[node name="Head" type="Spatial" parent="Smoothing"]
 
-[node name="Camera" type="Camera" parent="Body/Orientation/Head"]
+[node name="Camera" type="Camera" parent="Smoothing/Head"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8 )
 current = true
 fov = 80.0
 far = 8192.0
+
+[node name="Body" type="KinematicBody" parent="."]
 
 [node name="CollisionShape" type="CollisionShape" parent="Body"]
 shape = SubResource( 2 )
