@@ -6,12 +6,12 @@ export(NodePath) var gravity_list_path
 export(NodePath) var gravity_tween_path
 export(NodePath) var head_path
 export(float) var mouse_sensitivity = 1.0
-export(float) var ground_speed := 50.0
+export(float) var ground_speed := 40.0
 export(float) var ground_acceleration := 1000.0
 export(float) var ground_traction := 1000.0
-export(float) var air_speed := 25.0
-export(float) var air_acceleration := 80.0
-export(float) var air_traction := 80.0
+export(float) var air_speed := 40.0
+export(float) var air_acceleration := 200.0
+export(float) var air_traction := 3.0
 export(float) var jetpack_speed := 100.0
 export(float) var jetpack_acceleration := 200.0
 export(float) var jump_strength := 50.0
@@ -32,18 +32,27 @@ var max_move_recursions := 4
 var move_recursions := 0
 
 
-func horizontal_velocity_movement_addition(target: Vector3, weight: float) -> Vector3:
+func horizontal_velocity_movement_addition(target: Vector3, acceleration: float, traction: float) -> Vector3:
     var movement_plane: Plane = Plane(up_normal, 0.0)
     var target_in_movement_plane: Vector3 = movement_plane.project(target)
     var velocity_in_movement_plane: Vector3 = movement_plane.project(velocity)
-    return velocity_in_movement_plane.move_toward(target_in_movement_plane, weight) - velocity_in_movement_plane
+    var velocity_and_target_are_in_same_direction: bool = velocity_in_movement_plane.dot(target_in_movement_plane) >= 0.0
+    var modifier: float
+
+    if velocity_and_target_are_in_same_direction \
+    and velocity_in_movement_plane.length() > target_in_movement_plane.length():
+        modifier = traction
+    else:
+        modifier = acceleration
+
+    return velocity_in_movement_plane.move_toward(target_in_movement_plane, modifier) - velocity_in_movement_plane
 
 
 func initiate_orientation_to_new_gravity_source() -> void:
     gravity_rotation_weight = 0.0
     gravity_tween.interpolate_property(self, "gravity_rotation_weight",
-        0.0, 1.0, 1.0,
-        Tween.TRANS_EXPO, Tween.EASE_IN)
+        0.0, 1.0, 2.0,
+        Tween.TRANS_QUAD, Tween.EASE_IN)
     gravity_tween.start()
 
 
@@ -97,24 +106,22 @@ func handle_mouse_looking(mouse_change: Vector2) -> void:
         head.rotation_degrees = rotation
 
 
-func handle_grounded_horizontal_movement(delta: float) -> void:
+func handle_horizontal_movement(delta: float, speed: float, acceleration: float, traction: float) -> void:
     if forward_movement != 0.0 or strafe_movement != 0.0:
         var forward: Vector3 = -orientation.transform.basis.z.normalized()
         var sideways: Vector3 = orientation.transform.basis.x.normalized()
         var movement_direction: Vector3 = (forward * forward_movement + sideways * strafe_movement).normalized()
-        velocity += horizontal_velocity_movement_addition(movement_direction * ground_speed, ground_acceleration * delta)
+        velocity += horizontal_velocity_movement_addition(
+            movement_direction * speed,
+            acceleration * delta,
+            traction * delta
+        )
     else:
-        velocity += horizontal_velocity_movement_addition(Vector3.ZERO, ground_traction * delta)
-
-
-func handle_aerial_horizontal_movement(delta: float) -> void:
-    if forward_movement != 0.0 or strafe_movement != 0.0:
-        var forward: Vector3 = -orientation.transform.basis.z.normalized()
-        var sideways: Vector3 = orientation.transform.basis.x.normalized()
-        var movement_direction: Vector3 = (forward * forward_movement + sideways * strafe_movement).normalized()
-        velocity += horizontal_velocity_movement_addition(movement_direction * air_speed, air_acceleration * delta)
-    else:
-        velocity += horizontal_velocity_movement_addition(Vector3.ZERO, air_traction * delta)
+        velocity += horizontal_velocity_movement_addition(
+            Vector3.ZERO,
+            traction * delta,
+            traction * delta
+        )
 
 
 func handle_jetpack_movement(delta: float) -> void:
@@ -175,13 +182,13 @@ func _physics_process(delta: float) -> void:
         if Input.is_action_just_pressed("jump"):
             velocity += up_normal * jump_strength
 
-        handle_grounded_horizontal_movement(delta)
+        handle_horizontal_movement(delta, ground_speed, ground_acceleration, ground_traction)
 
     else:
         if Input.is_action_pressed("jump"):
             handle_jetpack_movement(delta)
 
-        handle_aerial_horizontal_movement(delta)
+        handle_horizontal_movement(delta, air_speed, air_acceleration, air_traction)
 
     move(velocity * delta)
 
