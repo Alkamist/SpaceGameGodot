@@ -12,15 +12,16 @@ export(float) var ground_traction := 1000.0
 export(float) var air_speed := 40.0
 export(float) var air_acceleration := 200.0
 export(float) var air_traction := 3.0
-export(float) var jetpack_speed := 100.0
+export(float) var jetpack_speed := 80.0
 export(float) var jetpack_acceleration := 200.0
-export(float) var jump_strength := 50.0
+export(float) var jump_strength := 35.0
 
 onready var gravity_list: GravityList = get_node(gravity_list_path)
 onready var gravity_tween: Tween = get_node(gravity_tween_path)
 onready var head: Spatial = get_node(head_path)
 
 var is_on_ground := false
+var is_in_atmosphere := false
 var closest_gravity_source: GravitySource
 var bound_gravity_source: GravitySource
 var gravity_normal: Vector3
@@ -172,9 +173,13 @@ func _physics_process(delta: float) -> void:
         update_gravity_source()
 
     if bound_gravity_source:
-        gravity_normal = vector_to_gravity_source(bound_gravity_source).normalized()
+        var gravity_vector: Vector3 = vector_to_gravity_source(bound_gravity_source)
+        gravity_normal = gravity_vector.normalized()
         up_normal = -gravity_normal
+        is_in_atmosphere = gravity_vector.length() - (bound_gravity_source.source_radius + bound_gravity_source.full_gravity_distance) < 0.0
         handle_gravity_rotation()
+    else:
+        is_in_atmosphere = false
 
     check_if_on_ground(0.2)
 
@@ -183,12 +188,11 @@ func _physics_process(delta: float) -> void:
             velocity += up_normal * jump_strength
 
         handle_horizontal_movement(delta, ground_speed, ground_acceleration, ground_traction)
-
     else:
         if Input.is_action_pressed("jump"):
             handle_jetpack_movement(delta)
 
-        handle_horizontal_movement(delta, air_speed, air_acceleration, air_traction)
+        handle_horizontal_movement(delta, air_speed, air_acceleration, air_traction if is_in_atmosphere else 0.0)
 
     move(velocity * delta)
 
