@@ -23,6 +23,7 @@ onready var head: Spatial = get_node(head_path)
 var is_on_ground := false
 var is_in_atmosphere := false
 var closest_gravity_source: GravitySource
+var bound_gravity_source_last_frame: GravitySource
 var bound_gravity_source: GravitySource
 var gravity_normal: Vector3
 var up_normal: Vector3
@@ -49,12 +50,17 @@ func horizontal_velocity_movement_addition(target: Vector3, acceleration: float,
     return velocity_in_movement_plane.move_toward(target_in_movement_plane, modifier) - velocity_in_movement_plane
 
 
-func initiate_orientation_to_new_gravity_source() -> void:
+func on_bound_gravity_source_change() -> void:
     gravity_rotation_weight = 0.0
     gravity_tween.interpolate_property(self, "gravity_rotation_weight",
         0.0, 1.0, 2.0,
         Tween.TRANS_QUAD, Tween.EASE_IN)
     gravity_tween.start()
+
+    if bound_gravity_source_last_frame:
+        velocity += bound_gravity_source_last_frame.velocity - bound_gravity_source.velocity
+    else:
+        velocity += -bound_gravity_source.velocity
 
 
 func vector_to_gravity_source(source: GravitySource) -> Vector3:
@@ -64,6 +70,8 @@ func vector_to_gravity_source(source: GravitySource) -> Vector3:
 
 
 func update_gravity_source() -> void:
+    bound_gravity_source_last_frame = bound_gravity_source
+
     for source in gravity_list.sources:
         if closest_gravity_source == null:
             closest_gravity_source = source
@@ -72,7 +80,6 @@ func update_gravity_source() -> void:
             var source_distance: float = vector_to_gravity_source(source).length()
             if source_distance < closest_distance:
                 closest_gravity_source = source
-                initiate_orientation_to_new_gravity_source()
 
     var gravity_influence_distance: float = closest_gravity_source.source_radius \
                                           + closest_gravity_source.full_gravity_distance \
@@ -82,6 +89,10 @@ func update_gravity_source() -> void:
         bound_gravity_source = closest_gravity_source
     else:
         bound_gravity_source = null
+
+    if bound_gravity_source != null \
+    and bound_gravity_source != bound_gravity_source_last_frame:
+        on_bound_gravity_source_change()
 
 
 func handle_gravity_rotation() -> void:
