@@ -58,11 +58,13 @@ func handle_mouse_looking(mouse_change: Vector2) -> void:
         var vertical: float = -mouse_change.y * (mouse_sensitivity / 10.0)
 
         body.transform.basis = body.transform.basis.rotated(body.transform.basis.y.normalized(), deg2rad(horizontal))
+        body.transform = body.transform.orthonormalized()
 
         head.rotate_x(deg2rad(vertical))
         var rotation: Vector3 = head.rotation_degrees
         rotation.x = clamp(rotation.x, -90.0, 90.0)
         head.rotation_degrees = rotation
+        head.transform = head.transform.orthonormalized()
 
 
 func handle_horizontal_movement(delta: float, speed: float, acceleration: float, traction: float) -> void:
@@ -99,6 +101,14 @@ func move(distance: Vector3) -> void:
     if collision and move_recursions < max_move_recursions:
         move_recursions += 1
         velocity = velocity.slide(collision.normal)
+
+        var collider_parent: Node = collision.collider.get_parent()
+        if collider_parent:
+            if "is_gravity_source" in collider_parent \
+            and collider_parent.is_gravity_source:
+                get_parent().remove_child(self)
+                collision.collider.add_child(self)
+
         move(collision.remainder.slide(collision.normal))
     else:
         move_recursions = 0

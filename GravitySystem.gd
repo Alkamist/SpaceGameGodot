@@ -54,11 +54,14 @@ func apply_gravity(delta: float, source: GravitySource, target) -> void:
 
         target.velocity += gravity_direction * gravity_intensity * delta
 
-        if "up_normal" in target:
-            target.up_normal = -gravity_direction
+        if "relative_mover" in target:
+            target.relative_mover.movement_parent = source.body
 
-        if "is_in_atmosphere" in target:
-            target.is_in_atmosphere = distance_from_full_gravity <= 0.0
+        #if "up_normal" in target:
+        #    target.up_normal = -gravity_direction
+
+        #if "is_in_atmosphere" in target:
+        #    target.is_in_atmosphere = distance_from_full_gravity <= 0.0
 
 
 func _ready() -> void:

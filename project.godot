@@ -23,11 +23,17 @@ _global_script_classes=[ {
 "class": "GravitySystem",
 "language": "GDScript",
 "path": "res://GravitySystem.gd"
+}, {
+"base": "Spatial",
+"class": "RelativeMover",
+"language": "GDScript",
+"path": "res://RelativeMover.gd"
 } ]
 _global_script_class_icons={
 "CharacterController": "",
 "GravitySource": "",
-"GravitySystem": ""
+"GravitySystem": "",
+"RelativeMover": ""
 }
 
 [application]
