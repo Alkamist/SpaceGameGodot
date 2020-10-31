@@ -11,14 +11,15 @@ func update_targets_and_sources() -> void:
     targets.clear()
 
     for child in get_children():
-        targets.append(child)
+        if child.has_node("Body"):
+            targets.append(child.get_node("Body"))
 
     for target in targets:
-        if "is_gravity_source" in target and target.is_gravity_source:
+        if "gravity_strength" in target:
             sources.append(target)
 
 
-func apply_gravity(delta: float, source: GravitySource, target) -> void:
+func apply_gravity(source: GravitySource, target) -> void:
     var source_position: Vector3 = source.global_transform.origin
     var target_position: Vector3 = target.global_transform.origin
     var gravity_vector: Vector3 = (source_position - target_position)
@@ -36,7 +37,10 @@ func apply_gravity(delta: float, source: GravitySource, target) -> void:
         else:
             gravity_intensity = source.gravity_strength
 
-        target.velocity += gravity_direction * gravity_intensity * delta
+        target.gravity += gravity_direction * gravity_intensity
+
+        if "up_normal" in target:
+            target.up_normal = -gravity_direction
 
         #if "is_in_atmosphere" in target:
         #    target.is_in_atmosphere = distance_from_full_gravity <= 0.0
@@ -46,7 +50,10 @@ func _ready() -> void:
     update_targets_and_sources()
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
+    for target in targets:
+        target.gravity = Vector3.ZERO
+
     for source in sources:
         for target in targets:
-            apply_gravity(delta, source, target)
+            apply_gravity(source, target)

@@ -14,41 +14,58 @@ ground_horizon_color = Color( 0.192157, 0.192157, 0.192157, 1 )
 background_mode = 2
 background_sky = SubResource( 1 )
 
-[sub_resource type="SpatialMaterial" id=4]
-albedo_color = Color( 0.0196078, 0.992157, 0.0352941, 1 )
+[sub_resource type="CubeMesh" id=5]
 
-[sub_resource type="SphereMesh" id=5]
-material = SubResource( 4 )
-radial_segments = 128
-rings = 64
+[sub_resource type="SphereMesh" id=3]
+radial_segments = 256
+rings = 128
 
-[sub_resource type="SphereShape" id=6]
-radius = 100.0
+[sub_resource type="SphereShape" id=4]
+radius = 500.0
 
 [node name="TestScene" type="Spatial"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 2 )
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 10, 0 )
-far = 8192.0
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 818.62, -1098.27 )
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="MeshInstance2" type="MeshInstance" parent="."]
+transform = Transform( 100, 0, 0, 0, 100, 0, 0, 0, 100, -1104.87, 818.62, 249.917 )
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="MeshInstance3" type="MeshInstance" parent="."]
+transform = Transform( 100, 0, 0, 0, 100, 0, 0, 0, 100, -353.542, -1645.81, 249.917 )
+mesh = SubResource( 5 )
+material/0 = null
+
+[node name="MeshInstance4" type="MeshInstance" parent="."]
+transform = Transform( 100, 0, 0, 0, 100, 0, 0, 0, 100, 1051.81, 719.656, 903.785 )
+mesh = SubResource( 5 )
+material/0 = null
 
 [node name="GravitySystem" type="Spatial" parent="."]
 script = ExtResource( 2 )
 
 [node name="Character" parent="GravitySystem" instance=ExtResource( 1 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 148.681, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 773.198, 0 )
 
-[node name="Planet1" type="KinematicBody" parent="GravitySystem"]
-transform = Transform( -1, 0, 3.25841e-07, 0, 1, 0, -3.25841e-07, 0, -1, 0, 0, 0 )
+[node name="Planet1" type="Spatial" parent="GravitySystem"]
+
+[node name="Body" type="RigidBody" parent="GravitySystem/Planet1"]
+mass = 500.0
 script = ExtResource( 5 )
+spin = Vector3( 0, 0.03, 0 )
 gravity_strength = 60.0
 
-[node name="MeshInstance" type="MeshInstance" parent="GravitySystem/Planet1"]
-transform = Transform( 100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0 )
-mesh = SubResource( 5 )
+[node name="MeshInstance" type="MeshInstance" parent="GravitySystem/Planet1/Body"]
+transform = Transform( 500, 0, 0, 0, 500, 0, 0, 0, 500, 0, 0, 0 )
+mesh = SubResource( 3 )
 material/0 = null
 
-[node name="CollisionShape" type="CollisionShape" parent="GravitySystem/Planet1"]
-shape = SubResource( 6 )
+[node name="CollisionShape" type="CollisionShape" parent="GravitySystem/Planet1/Body"]
+shape = SubResource( 4 )
