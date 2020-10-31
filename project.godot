@@ -9,12 +9,12 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Spatial",
+"base": "RelativeMover",
 "class": "CharacterController",
 "language": "GDScript",
 "path": "res://CharacterController.gd"
 }, {
-"base": "Spatial",
+"base": "KinematicBody",
 "class": "GravitySource",
 "language": "GDScript",
 "path": "res://GravitySource.gd"
@@ -24,7 +24,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://GravitySystem.gd"
 }, {
-"base": "Spatial",
+"base": "KinematicBody",
 "class": "RelativeMover",
 "language": "GDScript",
 "path": "res://RelativeMover.gd"

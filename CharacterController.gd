@@ -1,4 +1,4 @@
-extends Spatial
+extends RelativeMover
 class_name CharacterController
 
 
@@ -14,8 +14,7 @@ export(float) var jetpack_speed := 80.0
 export(float) var jetpack_acceleration := 200.0
 export(float) var jump_strength := 50.0
 
-onready var body: KinematicBody = get_node("Body")
-onready var head: Spatial = get_node("Smoothing/Head")
+onready var head: Spatial = get_node("Head")
 
 var up_normal := Vector3.UP setget set_up_normal
 
@@ -30,10 +29,10 @@ var move_recursions := 0
 
 func set_up_normal(value: Vector3) -> void:
     up_normal = value
-    var angle_to_up: float = body.transform.basis.y.angle_to(up_normal)
+    var angle_to_up: float = transform.basis.y.angle_to(up_normal)
     if angle_to_up > 0.0:
-        var rotation_axis: Vector3 = body.transform.basis.y.cross(up_normal).normalized()
-        body.transform.basis = body.transform.basis.rotated(rotation_axis, angle_to_up)
+        var rotation_axis: Vector3 = transform.basis.y.cross(up_normal).normalized()
+        transform.basis = transform.basis.rotated(rotation_axis, angle_to_up)
 
 
 func horizontal_velocity_movement_addition(target: Vector3, acceleration: float, traction: float) -> Vector3:
@@ -57,8 +56,8 @@ func handle_mouse_looking(mouse_change: Vector2) -> void:
         var horizontal: float = -mouse_change.x * (mouse_sensitivity / 10.0)
         var vertical: float = -mouse_change.y * (mouse_sensitivity / 10.0)
 
-        body.transform.basis = body.transform.basis.rotated(body.transform.basis.y.normalized(), deg2rad(horizontal))
-        body.transform = body.transform.orthonormalized()
+        transform.basis = transform.basis.rotated(transform.basis.y.normalized(), deg2rad(horizontal))
+        transform = transform.orthonormalized()
 
         head.rotate_x(deg2rad(vertical))
         var rotation: Vector3 = head.rotation_degrees
@@ -69,8 +68,8 @@ func handle_mouse_looking(mouse_change: Vector2) -> void:
 
 func handle_horizontal_movement(delta: float, speed: float, acceleration: float, traction: float) -> void:
     if forward_movement != 0.0 or strafe_movement != 0.0:
-        var forward: Vector3 = -body.transform.basis.z.normalized()
-        var sideways: Vector3 = body.transform.basis.x.normalized()
+        var forward: Vector3 = -transform.basis.z.normalized()
+        var sideways: Vector3 = transform.basis.x.normalized()
         var movement_direction: Vector3 = (forward * forward_movement + sideways * strafe_movement).normalized()
         velocity += horizontal_velocity_movement_addition(
             movement_direction * speed,
@@ -91,23 +90,20 @@ func handle_jetpack_movement(delta: float) -> void:
 
 
 func check_if_on_ground(tolerance_distance: float) -> void:
-    var collision: KinematicCollision = body.move_and_collide(-up_normal * tolerance_distance, true, true, true)
+    var collision: KinematicCollision = move_and_collide(-up_normal * tolerance_distance, true, true, true)
     is_on_ground = collision != null
 
 
 func move(distance: Vector3) -> void:
-    var collision: KinematicCollision = body.move_and_collide(distance, true, true, false)
+    var collision: KinematicCollision = move_and_collide(distance, true, true, false)
 
     if collision and move_recursions < max_move_recursions:
         move_recursions += 1
         velocity = velocity.slide(collision.normal)
 
-        var collider_parent: Node = collision.collider.get_parent()
-        if collider_parent:
-            if "is_gravity_source" in collider_parent \
-            and collider_parent.is_gravity_source:
-                get_parent().remove_child(self)
-                collision.collider.add_child(self)
+        if "is_gravity_source" in collision.collider \
+        and collision.collider.is_gravity_source:
+            set_movement_parent(collision.collider)
 
         move(collision.remainder.slide(collision.normal))
     else:
@@ -131,6 +127,12 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
+    ._physics_process(delta)
+
+    if movement_parent != null:
+        #velocity = movement_parent_relative_quat.xform(velocity)
+        set_up_normal(transform.origin.normalized())
+
     check_if_on_ground(0.2)
 
     if is_on_ground:
@@ -144,4 +146,7 @@ func _physics_process(delta: float) -> void:
 
         handle_horizontal_movement(delta, air_speed, air_acceleration, air_traction if is_in_atmosphere else 0.0)
 
-    move(velocity * delta)
+    if movement_parent != null:
+        move(movement_parent.transform.basis.xform(velocity) * delta)
+    else:
+        move(velocity * delta)
