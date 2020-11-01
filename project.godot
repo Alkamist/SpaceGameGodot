@@ -10,11 +10,16 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "PhysicsBody",
+"class": "CharacterBody",
+"language": "GDScript",
+"path": "res://CharacterBody.gd"
+}, {
+"base": "Node",
 "class": "CharacterController",
 "language": "GDScript",
 "path": "res://CharacterController.gd"
 }, {
-"base": "KinematicBody",
+"base": "RigidBody",
 "class": "GravitySource",
 "language": "GDScript",
 "path": "res://GravitySource.gd"
@@ -25,6 +30,7 @@ _global_script_classes=[ {
 "path": "res://GravitySystem.gd"
 } ]
 _global_script_class_icons={
+"CharacterBody": "",
 "CharacterController": "",
 "GravitySource": "",
 "GravitySystem": ""
@@ -75,6 +81,7 @@ sprint={
 
 [physics]
 
+3d/physics_engine="Bullet"
 3d/default_gravity=0.0
 3d/default_gravity_vector=Vector3( 0, 0, 0 )
 3d/default_linear_damp=0.0

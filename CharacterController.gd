@@ -31,7 +31,7 @@ func handle_mouse_looking(mouse_change: Vector2) -> void:
         head.rotate_object_local(Vector3(0, 1, 0), look_rotation.x)
         head.rotate_object_local(Vector3(1, 0, 0), look_rotation.y)
         head.transform.basis = head.transform.basis.orthonormalized()
-        set_look_direction(Plane(get_up_normal(), 0.0).project(head.global_transform.basis.z.normalized()))
+        set_look_direction(head.global_transform.basis.z.normalized())
 
 
 func _ready() -> void:
