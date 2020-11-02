@@ -24,7 +24,9 @@ func _integrate_forces(state: PhysicsDirectBodyState) -> void:
     state.add_central_force(gravity * mass)
     state.set_angular_velocity(spin)
 
-    var spin_perpendicular: Vector3 = perpendicular_vector(spin)
-    var delta_spin: float = previous_transform.basis.xform(spin_perpendicular).angle_to(transform.basis.xform(spin_perpendicular))
-    emit_signal("changed_rotation", spin.normalized(), delta_spin)
+    if spin.length() > 0.0:
+        var spin_perpendicular: Vector3 = perpendicular_vector(spin)
+        var delta_spin: float = previous_transform.basis.xform(spin_perpendicular).angle_to(transform.basis.xform(spin_perpendicular))
+        emit_signal("changed_rotation", spin.normalized(), delta_spin)
+
     previous_transform = transform

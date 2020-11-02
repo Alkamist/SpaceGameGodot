@@ -2,7 +2,6 @@ extends RigidBody
 class_name CharacterBody
 
 
-var up_normal := Vector3.UP
 var look_direction := Vector3(0.0, 0.0, 1.0)
 var gravity := Vector3.ZERO
 var ground_speed := 10.0
@@ -14,8 +13,15 @@ var forward_movement := 0.0
 var strafe_movement := 0.0
 var can_jump := false
 
-var planet: GravitySource
+var up_normal := Vector3.UP
+
+var planet: GravitySource setget set_planet
 var previous_planet: GravitySource
+func set_planet(value: GravitySource) -> void:
+    previous_planet = planet
+    planet = value
+    if planet != previous_planet:
+        emit_signal("planet_changed")
 
 signal planet_changed
 
@@ -65,19 +71,14 @@ func stay_upright(state: PhysicsDirectBodyState) -> void:
         state.set_angular_velocity(rotation_axis * angle / state.step)
 
 
-func on_body_entered(body: Node) -> void:
-    if body is GravitySource:
-        previous_planet = planet
-        planet = body
-        if planet != previous_planet:
-            emit_signal("planet_changed")
-
-
-func _ready() -> void:
-    connect("body_entered", self, "on_body_entered")
-
-
 func _integrate_forces(state: PhysicsDirectBodyState) -> void:
+    if planet:
+        var vector_from_planet: Vector3 = global_transform.origin - planet.global_transform.origin
+        if vector_from_planet.length() <= planet.source_radius + planet.full_gravity_distance:
+            up_normal = vector_from_planet.normalized()
+        else:
+            set_planet(null)
+
     #for contact_id in state.get_contact_count():
     #    print(state.get_contact_local_position(contact_id))
 

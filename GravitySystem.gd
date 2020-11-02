@@ -39,11 +39,16 @@ func apply_gravity(source: GravitySource, target) -> void:
 
         target.gravity += gravity_direction * gravity_intensity
 
-        if "up_normal" in target:
-            target.up_normal = -gravity_direction
-
-        #if "is_in_atmosphere" in target:
-        #    target.is_in_atmosphere = distance_from_full_gravity <= 0.0
+        if "planet" in target:
+            if target.planet:
+                var distance_to_targets_planet: float = (target_position - target.planet.global_transform.origin).length()
+                var distance_to_targets_planets_surface: float = distance_to_targets_planet - target.planet.source_radius
+                if distance_from_surface < distance_to_targets_planets_surface \
+                and distance_from_full_gravity <= 0.0:
+                    target.planet = source
+            else:
+                if distance_from_full_gravity <= 0.0:
+                    target.planet = source
 
 
 func _ready() -> void:
