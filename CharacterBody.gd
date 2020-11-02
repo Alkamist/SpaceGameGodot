@@ -14,6 +14,11 @@ var forward_movement := 0.0
 var strafe_movement := 0.0
 var can_jump := false
 
+var planet: GravitySource
+var previous_planet: GravitySource
+
+signal planet_changed
+
 
 func horizontal_velocity_addition(movement_plane: Plane,
                                   current: Vector3,
@@ -35,61 +40,41 @@ func horizontal_velocity_addition(movement_plane: Plane,
 
 
 func horizontal_movement(state: PhysicsDirectBodyState, speed: float, acceleration: float, traction: float) -> void:
-    var movement_plane: Plane = Plane(up_normal, 0.0)
-    var velocity_addition: Vector3
-
     if forward_movement != 0.0 or strafe_movement != 0.0:
         physics_material_override.friction = 0.0
+        var movement_plane: Plane = Plane(up_normal, 0.0)
         var forward: Vector3 = movement_plane.project(look_direction.normalized())
         var sideways: Vector3 = look_direction.cross(up_normal).normalized()
         var movement_direction: Vector3 = (forward * forward_movement + sideways * strafe_movement).normalized()
-        velocity_addition = horizontal_velocity_addition(
-            movement_plane,
-            state.linear_velocity,
-            movement_direction * speed,
-            acceleration * state.step,
-            traction * state.step
-        )
-    else:
-        physics_material_override.friction = 4.0
-        #velocity_addition = horizontal_velocity_addition(
+        state.add_central_force(movement_direction * 10.0 * mass)
+        #state.set_linear_velocity(state.linear_velocity + horizontal_velocity_addition(
         #    movement_plane,
         #    state.linear_velocity,
-        #    Vector3.ZERO,
-        #    traction * state.step,
+        #    movement_direction * speed,
+        #    acceleration * state.step,
         #    traction * state.step
-        #)
+        #))
+    else:
+        physics_material_override.friction = 4.0
 
-    state.add_central_force(velocity_addition * mass / state.step)
 
-
-func stay_upright() -> void:
+func stay_upright(state: PhysicsDirectBodyState) -> void:
     var angle: float = transform.basis.y.angle_to(up_normal)
     if angle > 0.0:
         var rotation_axis: Vector3 = transform.basis.y.cross(up_normal).normalized()
-        transform.basis = transform.basis.rotated(rotation_axis, angle)
+        state.set_angular_velocity(rotation_axis * angle / state.step)
 
 
-#func rotate_to_look_direction() -> void:
-#    var movement_plane: Plane = Plane(up_normal, 0.0)
-#    var horizontal_look_direction: Vector3 = movement_plane.project(look_direction)
-#    var horizontal_direction: Vector3 = movement_plane.project(transform.basis.z).normalized()
-#    var rotation_angle: float = horizontal_direction.angle_to(horizontal_look_direction)
-#    if rotation_angle > 0.0:
-#        var rotation_axis: Vector3 = horizontal_direction.cross(horizontal_look_direction).normalized()
-#        transform.basis = transform.basis.rotated(rotation_axis, rotation_angle)
+func on_body_entered(body: Node) -> void:
+    if body is GravitySource:
+        previous_planet = planet
+        planet = body
+        if planet != previous_planet:
+            emit_signal("planet_changed")
 
 
-#func move_horizontally(state: PhysicsDirectBodyState, speed: float, acceleration: float) -> void:
-#    var movement_plane: Plane = Plane(up_normal, 0.0)
-#    var forward: Vector3 = movement_plane.project(look_direction.normalized())
-#    var sideways: Vector3 = look_direction.cross(up_normal).normalized()
-#    var movement_direction: Vector3 = (forward * forward_movement + sideways * strafe_movement).normalized()
-#    var target_in_movement_plane: Vector3 = movement_plane.project(movement_direction * speed)
-#    var velocity_in_movement_plane: Vector3 = movement_plane.project(state.linear_velocity)
-#    var velocity_addition: Vector3 = velocity_in_movement_plane.move_toward(target_in_movement_plane, acceleration) - velocity_in_movement_plane
-#    var new_velocity: Vector3 = state.linear_velocity + velocity_addition
-#    state.set_linear_velocity(new_velocity)
+func _ready() -> void:
+    connect("body_entered", self, "on_body_entered")
 
 
 func _integrate_forces(state: PhysicsDirectBodyState) -> void:
@@ -97,10 +82,8 @@ func _integrate_forces(state: PhysicsDirectBodyState) -> void:
     #    print(state.get_contact_local_position(contact_id))
 
     state.add_central_force(gravity * mass)
-
     horizontal_movement(state, ground_speed, ground_acceleration, ground_traction)
-
-    stay_upright()
+    stay_upright(state)
 
     #if can_jump and Input.is_action_pressed("jump"):
     #    state.apply_central_impulse(up_normal * jump_speed * mass)

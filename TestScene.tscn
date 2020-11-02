@@ -16,50 +16,50 @@ background_mode = 2
 background_sky = SubResource( 1 )
 ambient_light_energy = 4.0
 
-[sub_resource type="PhysicsMaterial" id=10]
+[sub_resource type="PhysicsMaterial" id=3]
 
-[sub_resource type="CubeMesh" id=18]
+[sub_resource type="CubeMesh" id=4]
 size = Vector3( 50, 2, 50 )
 
-[sub_resource type="OpenSimplexNoise" id=20]
+[sub_resource type="OpenSimplexNoise" id=5]
 period = 4.0
 
-[sub_resource type="NoiseTexture" id=21]
+[sub_resource type="NoiseTexture" id=6]
 width = 1024
 height = 1024
-noise = SubResource( 20 )
+noise = SubResource( 5 )
 
-[sub_resource type="SpatialMaterial" id=22]
-albedo_texture = SubResource( 21 )
+[sub_resource type="SpatialMaterial" id=7]
+albedo_texture = SubResource( 6 )
 
-[sub_resource type="BoxShape" id=19]
+[sub_resource type="BoxShape" id=8]
 extents = Vector3( 25, 1, 25 )
 
-[sub_resource type="PhysicsMaterial" id=25]
+[sub_resource type="PhysicsMaterial" id=9]
 
-[sub_resource type="CubeMesh" id=23]
+[sub_resource type="CubeMesh" id=10]
 
-[sub_resource type="BoxShape" id=24]
+[sub_resource type="BoxShape" id=11]
 
-[sub_resource type="OpenSimplexNoise" id=13]
+[sub_resource type="OpenSimplexNoise" id=12]
 period = 4.0
 
-[sub_resource type="NoiseTexture" id=14]
+[sub_resource type="NoiseTexture" id=13]
 width = 1024
 height = 1024
-noise = SubResource( 13 )
+noise = SubResource( 12 )
 
-[sub_resource type="SpatialMaterial" id=15]
-albedo_texture = SubResource( 14 )
+[sub_resource type="SpatialMaterial" id=14]
+albedo_texture = SubResource( 13 )
 
-[sub_resource type="SphereMesh" id=11]
-material = SubResource( 15 )
+[sub_resource type="SphereMesh" id=15]
+material = SubResource( 14 )
 radius = 100.0
 height = 200.0
 radial_segments = 128
 rings = 64
 
-[sub_resource type="SphereShape" id=12]
+[sub_resource type="SphereShape" id=16]
 radius = 100.0
 
 [node name="TestScene" type="Spatial"]
@@ -72,29 +72,29 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.74212, -358.737 )
 
 [node name="Body" type="RigidBody" parent="Platform"]
 mode = 1
-physics_material_override = SubResource( 10 )
+physics_material_override = SubResource( 3 )
 
 [node name="MeshInstance" type="MeshInstance" parent="Platform/Body"]
-mesh = SubResource( 18 )
-material/0 = SubResource( 22 )
+mesh = SubResource( 4 )
+material/0 = SubResource( 7 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Platform/Body"]
-shape = SubResource( 19 )
+shape = SubResource( 8 )
 
 [node name="Slider" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12.4159 )
 
 [node name="Body" type="RigidBody" parent="Slider"]
 mass = 500.0
-physics_material_override = SubResource( 25 )
+physics_material_override = SubResource( 9 )
 script = ExtResource( 3 )
 
 [node name="MeshInstance" type="MeshInstance" parent="Slider/Body"]
-mesh = SubResource( 23 )
+mesh = SubResource( 10 )
 material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="Slider/Body"]
-shape = SubResource( 24 )
+shape = SubResource( 11 )
 
 [node name="GravitySystem" type="Spatial" parent="."]
 script = ExtResource( 2 )
@@ -107,13 +107,13 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -111.808, 0 )
 
 [node name="Body" type="RigidBody" parent="GravitySystem/Planet1"]
 mass = 65535.0
-physics_material_override = SubResource( 10 )
-angular_velocity = Vector3( 0, 0.08, 0 )
+physics_material_override = SubResource( 3 )
 script = ExtResource( 5 )
+spin = Vector3( 0, 0.1, 0 )
 
 [node name="MeshInstance" type="MeshInstance" parent="GravitySystem/Planet1/Body"]
-mesh = SubResource( 11 )
+mesh = SubResource( 15 )
 material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="GravitySystem/Planet1/Body"]
-shape = SubResource( 12 )
+shape = SubResource( 16 )
